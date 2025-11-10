@@ -1,7 +1,16 @@
 <template>
   <div class="content-panel rounded-4 p-3 h-100 d-flex flex-column">
     <div class="d-flex flex-column flex-md-row gap-2 mb-3">
-      <div class="flex-grow-1 position-relative">
+      <div
+        v-if="
+          showSalons ||
+          showRings ||
+          showShoes ||
+          showHairdresser ||
+          showCozmetic
+        "
+        class="flex-grow-1 position-relative"
+      >
         <input
           v-model="search"
           type="text"
@@ -10,7 +19,17 @@
         />
         <span class="search-icon">🔍</span>
       </div>
-      <select class="form-select rounded-pill w-auto">
+
+      <select
+        v-if="
+          showSalons ||
+          showRings ||
+          showShoes ||
+          showHairdresser ||
+          showCozmetic
+        "
+        class="form-select rounded-pill w-auto"
+      >
         <option>Sort by</option>
         <option>Name</option>
         <option>Rating</option>
@@ -57,6 +76,130 @@
       <MaidOfHonorCard />
     </div>
 
+    <div v-else-if="showBudget" class="flex-grow-1 p-3 d-flex flex-column">
+      <div class="bg-white rounded-4 shadow-sm p-3 d-flex flex-column h-100">
+        <h5 class="fw-bold mb-3 text-center">Wedding Budget Items</h5>
+
+        <div class="budget-table-wrapper flex-grow-1">
+          <table class="table table-sm align-middle text-center mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-start">Item</th>
+                <th style="width: 120px">Planned (€)</th>
+                <th style="width: 120px">Spent (€)</th>
+                <th style="width: 180px">Document</th>
+                <th style="width: 110px">Remaining</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in budgetItems" :key="item.label">
+                <td class="text-start">
+                  <span class="d-flex align-items-center gap-2">
+                    <img
+                      v-if="item.icon"
+                      :src="item.icon"
+                      alt=""
+                      class="icon-img"
+                    />
+                    {{ item.label }}
+                  </span>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    class="form-control form-control-sm text-center"
+                    v-model.number="item.planned"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    class="form-control form-control-sm text-center"
+                    v-model.number="item.spent"
+                  />
+                </td>
+                <td>
+                  <input type="file" class="form-control form-control-sm" />
+                </td>
+                <td>
+                  <span
+                    :class="{
+                      'text-success': item.planned - item.spent > 0,
+                      'text-danger': item.planned - item.spent < 0,
+                    }"
+                  >
+                    {{ item.planned - item.spent }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="showNotes" class="flex-grow-1 p-3 d-flex flex-column">
+      <div
+        class="bg-white rounded-4 shadow-sm p-3 h-100 d-flex flex-column gap-3"
+      >
+        <div class="d-flex gap-2">
+          <input
+            v-model="currentNote.title"
+            type="text"
+            class="form-control"
+            placeholder="Note title..."
+          />
+          <select
+            v-model="currentNote.priority"
+            class="form-select"
+            style="max-width: 150px"
+          >
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+          <div class="form-check d-flex align-items-center gap-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              v-model="currentNote.done"
+              :id="'note-done-' + currentNote.id"
+            />
+            <label
+              class="form-check-label small"
+              :for="'note-done-' + currentNote.id"
+            >
+              Done
+            </label>
+          </div>
+        </div>
+
+        <textarea
+          v-model="currentNote.text"
+          class="form-control flex-grow-1"
+          placeholder="Write your note here..."
+        ></textarea>
+
+        <div class="d-flex gap-3 align-items-center">
+          <div>
+            <label class="form-label small mb-1">Attach image</label>
+            <input type="file" class="form-control form-control-sm" />
+          </div>
+          <div
+            v-if="currentNote.image"
+            class="border rounded p-1"
+            style="width: 90px; height: 90px; overflow: hidden"
+          >
+            <img
+              :src="currentNote.image"
+              alt=""
+              class="w-100 h-100 object-fit-cover"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div
       v-else
       class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
@@ -77,6 +220,36 @@ import HairdresserCard from "./HairdresserCard.vue";
 import CozmeticCard from "./CozmeticCard.vue";
 import MaidOfHonorCard from "./MaidOfHonorCard.vue";
 
+import bride from "@/assets/bride.png";
+import ring from "@/assets/ring.png";
+import hairdresser from "@/assets/hairdresser.png";
+import heels from "@/assets/heels.png";
+import nails from "@/assets/nails.png";
+import maid from "@/assets/maid.png";
+import tai from "@/assets/tai.png";
+import groom from "@/assets/groom.png";
+import shirt from "@/assets/shirt.png";
+import suit from "@/assets/suit.png";
+import shoes from "@/assets/shoes.png";
+import car from "@/assets/car.png";
+import barber from "@/assets/barber.png";
+import time from "@/assets/time.png";
+import church from "@/assets/church.png";
+import flowers from "@/assets/flowers.png";
+import lapel from "@/assets/lapel.png";
+import bouquet from "@/assets/bouquet.png";
+import engagement from "@/assets/engagement.png";
+import music from "@/assets/music.png";
+import priest from "@/assets/priest.png";
+import note from "@/assets/note.png";
+import readers from "@/assets/readers.png";
+import confetti from "@/assets/confetti.png";
+import band from "@/assets/band.png";
+import menu from "@/assets/menu.png";
+import halla from "@/assets/halla.png";
+import cake from "@/assets/cake.png";
+import dance from "@/assets/dance.png";
+
 export default {
   name: "ContentPanel",
   components: {
@@ -94,6 +267,80 @@ export default {
   data() {
     return {
       search: "",
+      notesData: [
+        {
+          id: 1,
+          title: "Checklist for photographer",
+          priority: "high",
+          done: false,
+          text: "Ask about golden hour, backup, price.",
+          image: "",
+        },
+        {
+          id: 2,
+          title: "Questions for the hall",
+          priority: "medium",
+          done: false,
+          text: "How many people, cake, music until when...",
+          image: "",
+        },
+        {
+          id: 3,
+          title: "Guests to call",
+          priority: "low",
+          done: true,
+          text: "Marko, Ana, Luka...",
+          image: "",
+        },
+      ],
+
+      budgetItems: [
+        { label: "Wedding dress", icon: bride, planned: 1200, spent: 800 },
+        { label: "Rings", icon: ring, planned: 800, spent: 500 },
+        { label: "Shoes (bride)", icon: heels, planned: 150, spent: 0 },
+        {
+          label: "Hairdresser (bride)",
+          icon: hairdresser,
+          planned: 90,
+          spent: 0,
+        },
+        { label: "Nails", icon: nails, planned: 50, spent: 0 },
+        { label: "Maid of Honor", icon: maid, planned: 120, spent: 0 },
+
+        { label: "Tie", icon: tai, planned: 40, spent: 0 },
+        { label: "Shoes (groom)", icon: shoes, planned: 120, spent: 0 },
+        { label: "Shirt", icon: shirt, planned: 60, spent: 0 },
+        { label: "Suit", icon: suit, planned: 350, spent: 0 },
+        {
+          label: "Hairdresser (groom)",
+          icon: hairdresser,
+          planned: 25,
+          spent: 0,
+        },
+        { label: "Barber", icon: barber, planned: 25, spent: 0 },
+        { label: "Best Man", icon: groom, planned: 80, spent: 0 },
+
+        { label: "Bouquet", icon: bouquet, planned: 90, spent: 0 },
+        { label: "Lapel", icon: lapel, planned: 25, spent: 0 },
+        { label: "Car flowers", icon: car, planned: 70, spent: 0 },
+        { label: "Hall flowers", icon: flowers, planned: 180, spent: 0 },
+        { label: "Church flowers", icon: church, planned: 120, spent: 0 },
+
+        { label: "Date & Time", icon: time, planned: 0, spent: 0 },
+        { label: "Engagement course", icon: engagement, planned: 50, spent: 0 },
+        { label: "Music (church)", icon: music, planned: 120, spent: 0 },
+        { label: "A Priest", icon: priest, planned: 50, spent: 0 },
+        { label: "Readers", icon: readers, planned: 0, spent: 0 },
+        { label: "Documents", icon: note, planned: 30, spent: 0 },
+        { label: "Confetti", icon: confetti, planned: 40, spent: 0 },
+
+        { label: "Hall", icon: halla, planned: 1500, spent: 0 },
+        { label: "Menu", icon: menu, planned: 900, spent: 0 },
+        { label: "Cake", icon: cake, planned: 300, spent: 0 },
+        { label: "Band", icon: band, planned: 700, spent: 0 },
+        { label: "First dance", icon: dance, planned: 100, spent: 0 },
+      ],
+
       salons: [
         {
           id: 1,
@@ -281,6 +528,40 @@ export default {
         s.name.toLowerCase().includes(this.search.toLowerCase())
       );
     },
+    showBudget() {
+      return this.category === "budget";
+    },
+    showNotes() {
+      return this.category === "notes";
+    },
+    currentNote() {
+      if (!this.showNotes) return {};
+
+      const id =
+        this.sub && this.sub.startsWith("note-")
+          ? Number(this.sub.replace("note-", ""))
+          : this.notesData[0]?.id;
+      return this.notesData.find((n) => n.id === id) || this.notesData[0];
+    },
+  },
+  methods: {
+    onSelectNote(id) {
+      this.activeNoteId = id;
+    },
+    onAddNote() {
+      const newId = this.notes.length
+        ? Math.max(...this.notes.map((n) => n.id)) + 1
+        : 1;
+      this.notes.push({
+        id: newId,
+        title: "New note",
+        priority: "low",
+        done: false,
+        text: "",
+        image: "",
+      });
+      this.activeNoteId = newId;
+    },
   },
 };
 </script>
@@ -299,5 +580,20 @@ export default {
   top: 50%;
   left: 15px;
   transform: translateY(-50%);
+}
+.icon-img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.budget-table-wrapper {
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
+}
+
+textarea {
+  min-height: 160px;
+  resize: vertical;
 }
 </style>
