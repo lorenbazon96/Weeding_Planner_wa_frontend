@@ -17,7 +17,7 @@
       <div class="remaining-pill">{{ daysLeftMessage }}</div>
     </header>
 
-    <div class="container-fluid flex-grow-1">
+    <div class="container-fluid flex-grow-1" style="min-height: 0">
       <div class="row h-100 g-3">
         <div class="col-12 col-lg-2 h-100">
           <LeftMenu
@@ -108,9 +108,11 @@ export default {
 <style scoped>
 .welcome-shell {
   min-height: 100vh;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow: hidden;
 }
 
 .topbar {

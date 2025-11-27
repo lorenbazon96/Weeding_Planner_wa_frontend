@@ -99,9 +99,14 @@ export default {
 .content-panel {
   background: rgba(244, 231, 204, 0.95);
   border-radius: 1.5rem;
-  min-height: calc(100vh - 130px);
+  min-height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+
+.content-panel > .flex-grow-1 {
+  min-height: 0;
 }
 
 .table {

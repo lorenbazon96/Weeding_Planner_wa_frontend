@@ -94,7 +94,7 @@ export default {
   backdrop-filter: blur(2px);
   border-radius: 0 1.5rem 1.5rem 0;
   height: 100%;
-  min-height: calc(100vh - 130px);
+  min-height: calc(100vh - 200px);
 }
 .left-item {
   padding: 0.4rem 0.6rem;

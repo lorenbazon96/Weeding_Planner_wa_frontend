@@ -1,5 +1,5 @@
 <template>
-  <div class="content-panel rounded-4 p-3 h-100 d-flex flex-column">
+  <div class="content-panel rounded-4 p-3 d-flex flex-column">
     <div class="d-flex flex-column flex-md-row gap-2 mb-3">
       <div
         v-if="
@@ -209,11 +209,11 @@
       <DanceCard />
     </div>
 
-    <div v-else-if="showBudget" class="flex-grow-1 p-3 d-flex flex-column">
-      <div class="bg-white rounded-4 shadow-sm p-3 d-flex flex-column h-100">
+    <div v-else-if="showBudget" class="flex-grow-1 overflow-auto pe-1">
+      <div class="bg-white rounded-4 shadow-sm p-3">
         <h5 class="fw-bold mb-3 text-center">Wedding Budget Items</h5>
 
-        <div class="budget-table-wrapper flex-grow-1">
+        <div class="budget-table-wrapper">
           <table class="table table-sm align-middle text-center mb-0">
             <thead class="table-light sticky-top">
               <tr>
@@ -334,6 +334,224 @@
     </div>
 
     <div
+      v-else-if="showGuests"
+      class="flex-grow-1 d-flex flex-column overflow-auto pe-1"
+    >
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <select
+          v-model="guestFilterStatus"
+          class="form-select form-select-sm w-auto rounded-pill"
+        >
+          <option value="all">All statuses</option>
+          <option value="invited">Invited</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="declined">Declined</option>
+          <option value="maybe">Maybe</option>
+        </select>
+
+        <select
+          v-model="guestFilterSide"
+          class="form-select form-select-sm w-auto rounded-pill"
+        >
+          <option value="all">Both sides</option>
+          <option value="bride">Bride's side</option>
+          <option value="groom">Groom's side</option>
+        </select>
+
+        <select
+          v-model="guestSort"
+          class="form-select form-select-sm w-auto rounded-pill ms-auto"
+        >
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="status">By status</option>
+          <option value="side">By side</option>
+        </select>
+      </div>
+
+      <div class="bg-white rounded-4 shadow-sm p-3 flex-grow-1 overflow-auto">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Side</th>
+              <th>Group</th>
+              <th>Status</th>
+              <th class="text-center">Seats</th>
+              <th>Note</th>
+              <th class="text-center" style="width: 70px">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="guest in filteredGuests" :key="guest.id">
+              <td>{{ guest.name }}</td>
+              <td class="text-capitalize">{{ guest.side }}</td>
+              <td class="text-capitalize">{{ guest.group }}</td>
+              <td>
+                <select
+                  v-model="guest.status"
+                  class="form-select form-select-sm"
+                >
+                  <option value="invited">Invited</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="declined">Declined</option>
+                  <option value="maybe">Maybe</option>
+                </select>
+              </td>
+              <td class="text-center">
+                <input
+                  type="number"
+                  min="1"
+                  class="form-control form-control-sm text-center"
+                  v-model.number="guest.seats"
+                />
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  v-model="guest.note"
+                  placeholder="Note..."
+                />
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn btn-sm p-0 px-1 guest-delete-btn"
+                  @click="deleteGuest(guest.id)"
+                >
+                  <img :src="trash" alt="delete" class="guest-delete-icon" />
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-3 bg-white rounded-4 shadow-sm p-3">
+        <h6 class="fw-bold mb-2">Add guest</h6>
+        <div class="row g-2">
+          <div class="col-md-3">
+            <input
+              v-model="newGuest.name"
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Name and surname"
+            />
+          </div>
+          <div class="col-md-2">
+            <select v-model="newGuest.side" class="form-select form-select-sm">
+              <option value="bride">Bride</option>
+              <option value="groom">Groom</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <select v-model="newGuest.group" class="form-select form-select-sm">
+              <option value="family">Family</option>
+              <option value="friends">Friends</option>
+              <option value="colleagues">Colleagues</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <input
+              v-model.number="newGuest.seats"
+              type="number"
+              min="1"
+              class="form-control form-control-sm"
+              placeholder="Seats"
+            />
+          </div>
+          <div class="col-md-3 d-flex gap-2">
+            <input
+              v-model="newGuest.note"
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Note (optional)"
+            />
+            <button
+              class="btn btn-sm btn-primary rounded-pill"
+              @click="addGuest"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-else-if="showChat" class="flex-grow-1 d-flex flex-column">
+      <div class="d-flex align-items-center justify-content-between mb-2 px-2">
+        <div>
+          <h6 class="mb-0 fw-bold">{{ currentChatTitle }}</h6>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success rounded-pill">Online</span>
+        </div>
+      </div>
+
+      <div
+        class="chat-messages flex-grow-1 mb-3 p-3 rounded-4 bg-white shadow-sm overflow-auto"
+      >
+        <div
+          v-for="msg in currentChatMessages"
+          :key="msg.id"
+          class="d-flex mb-2"
+          :class="{
+            'justify-content-end': msg.from === 'me',
+            'justify-content-start': msg.from === 'them',
+          }"
+        >
+          <div
+            class="chat-bubble"
+            :class="{
+              'chat-bubble-me': msg.from === 'me',
+              'chat-bubble-them': msg.from === 'them',
+            }"
+          >
+            <div v-if="msg.type === 'text'">
+              {{ msg.text }}
+            </div>
+            <div v-else-if="msg.type === 'file'">📎 {{ msg.text }}</div>
+            <div class="chat-time">{{ msg.time }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input mt-auto">
+        <div
+          class="bg-white rounded-4 shadow-sm p-2 d-flex align-items-center gap-2"
+        >
+          <label class="btn btn-light btn-sm mb-0 rounded-circle">
+            📎
+            <input
+              type="file"
+              class="d-none"
+              multiple
+              @change="onChatFilesChange"
+            />
+          </label>
+
+          <textarea
+            v-model="newChatMessage"
+            class="form-control border-0 flex-grow-1"
+            rows="1"
+            placeholder="Write a message..."
+            @keyup.enter.exact.prevent="sendChatMessage"
+          ></textarea>
+
+          <button
+            class="btn btn-primary rounded-pill btn-sm px-3"
+            type="button"
+            @click="sendChatMessage"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
       v-else
       class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
     >
@@ -406,6 +624,7 @@ import menu from "@/assets/menu.png";
 import halla from "@/assets/halla.png";
 import cake from "@/assets/cake.png";
 import dance from "@/assets/dance.png";
+import trash from "@/assets/trash.png";
 
 export default {
   name: "ContentPanel",
@@ -444,6 +663,10 @@ export default {
   props: {
     category: String,
     sub: String,
+    chats: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -474,6 +697,48 @@ export default {
           image: "",
         },
       ],
+      guests: [
+        {
+          id: 1,
+          name: "Marko Markić",
+          side: "bride",
+          group: "family",
+          status: "confirmed",
+          seats: 2,
+          note: "",
+        },
+        {
+          id: 2,
+          name: "Ana Aničić",
+          side: "groom",
+          group: "friends",
+          status: "invited",
+          seats: 1,
+          note: "",
+        },
+        {
+          id: 3,
+          name: "Luka Lukić",
+          side: "bride",
+          group: "colleagues",
+          status: "maybe",
+          seats: 1,
+          note: "",
+        },
+      ],
+
+      newGuest: {
+        name: "",
+        side: "bride",
+        group: "family",
+        status: "invited",
+        seats: 1,
+        note: "",
+      },
+
+      guestSort: "name-asc",
+      guestFilterStatus: "all",
+      guestFilterSide: "all",
 
       budgetItems: [
         { label: "Wedding dress", icon: bride, planned: 1200, spent: 800 },
@@ -968,9 +1233,151 @@ export default {
           img: "https://picsum.photos/420/200?random=203",
         },
       ],
+      trash,
+      chatTitles: {
+        "chat-1": "Maid of Honor – Ana",
+        "chat-2": "Best Man – Marko",
+        "chat-3": "Bend Joy",
+      },
+      chatMessages: {
+        1: [
+          {
+            id: 1,
+            from: "them",
+            text: "Hej, imamo željenu haljinu, predivna je!",
+            time: "18:30",
+            type: "text",
+          },
+          {
+            id: 2,
+            from: "me",
+            text: "Jeee, baš mi je drago 😊",
+            time: "18:33",
+            type: "text",
+          },
+          {
+            id: 3,
+            from: "them",
+            text: "Odlično, možemo se čuti za termin",
+            time: "18:36",
+            type: "text",
+          },
+          {
+            id: 4,
+            from: "them",
+            text: "Ok, šaljem ti fotku haljine kasnije.",
+            time: "18:37",
+            type: "text",
+          },
+        ],
+        2: [
+          {
+            id: 1,
+            from: "me",
+            text: "Marko, potvrdi samo dolaziš li s partnericom.",
+            time: "17:01",
+            type: "text",
+          },
+          {
+            id: 2,
+            from: "them",
+            text: "Da, naravno!",
+            time: "18:30",
+            type: "text",
+          },
+          {
+            id: 1,
+            from: "me",
+            text: "Jesmo riješili prijevoz za kumove?",
+            time: "18:31",
+            type: "text",
+          },
+        ],
+        3: [
+          {
+            id: 1,
+            from: "them",
+            text: "Pozdrav, tada smo slobodni i možemo svirati.",
+            time: "Jučer",
+            type: "text",
+          },
+        ],
+      },
+
+      newChatMessage: "",
+      newChatFiles: [],
     };
   },
   computed: {
+    currentChatTitle() {
+      if (!this.sub) return "Chat";
+
+      if (this.chatTitles && this.chatTitles[this.sub]) {
+        return this.chatTitles[this.sub];
+      }
+
+      return this.sub;
+    },
+    showChat() {
+      return this.category === "chat";
+    },
+
+    currentChatId() {
+      if (!this.showChat) return null;
+      const id =
+        this.sub && this.sub.startsWith("chat-")
+          ? Number(this.sub.replace("chat-", ""))
+          : 1;
+      return id;
+    },
+
+    currentChatMessages() {
+      if (!this.currentChatId) return [];
+      return this.chatMessages[this.currentChatId] || [];
+    },
+    showGuests() {
+      return this.category === "guests";
+    },
+
+    filteredGuests() {
+      let list = this.guests;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((g) => g.name.toLowerCase().includes(q));
+      }
+
+      if (this.guestFilterStatus !== "all") {
+        list = list.filter((g) => g.status === this.guestFilterStatus);
+      }
+
+      if (this.guestFilterSide !== "all") {
+        list = list.filter((g) => g.side === this.guestFilterSide);
+      }
+
+      const sorted = [...list];
+      switch (this.guestSort) {
+        case "name-desc":
+          sorted.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+        case "status":
+          sorted.sort(
+            (a, b) =>
+              a.status.localeCompare(b.status) || a.name.localeCompare(b.name)
+          );
+          break;
+        case "side":
+          sorted.sort(
+            (a, b) =>
+              a.side.localeCompare(b.side) || a.name.localeCompare(b.name)
+          );
+          break;
+        default:
+          sorted.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      return sorted;
+    },
     showSalons() {
       return (
         this.category === "bride" &&
@@ -1195,6 +1602,79 @@ export default {
     },
   },
   methods: {
+    sendChatMessage() {
+      const text = this.newChatMessage.trim();
+      if (!text && !this.newChatFiles.length) return;
+
+      const id = this.currentChatId;
+      if (!id) return;
+
+      if (!this.chatMessages[id]) {
+        this.$set(this.chatMessages, id, []);
+      }
+
+      if (text) {
+        const newId = this.chatMessages[id].length
+          ? Math.max(...this.chatMessages[id].map((m) => m.id)) + 1
+          : 1;
+
+        this.chatMessages[id].push({
+          id: newId,
+          from: "me",
+          text,
+          time: "Now",
+          type: "text",
+        });
+      }
+
+      this.newChatFiles.forEach((file, index) => {
+        const newId = this.chatMessages[id].length
+          ? Math.max(...this.chatMessages[id].map((m) => m.id)) + 1
+          : 1;
+
+        this.chatMessages[id].push({
+          id: newId,
+          from: "me",
+          text: file.name,
+          time: "Now",
+          type: "file",
+        });
+      });
+
+      this.newChatMessage = "";
+      this.newChatFiles = [];
+    },
+
+    onChatFilesChange(event) {
+      const files = Array.from(event.target.files || []);
+      this.newChatFiles = files;
+    },
+    deleteGuest(id) {
+      this.guests = this.guests.filter((g) => g.id !== id);
+    },
+    addGuest() {
+      if (!this.newGuest.name.trim()) {
+        return;
+      }
+
+      const id = this.guests.length
+        ? Math.max(...this.guests.map((g) => g.id)) + 1
+        : 1;
+
+      this.guests.push({
+        id,
+        ...this.newGuest,
+      });
+
+      this.newGuest = {
+        name: "",
+        side: "bride",
+        group: "family",
+        status: "invited",
+        seats: 1,
+        note: "",
+      };
+    },
     onSelectNote(id) {
       this.activeNoteId = id;
     },
@@ -1221,10 +1701,18 @@ export default {
   background: rgba(244, 231, 204, 0.95);
   border-radius: 1.5rem;
   height: 100%;
-  min-height: calc(100vh - 130px);
+  min-height: calc(100vh - 200px);
+  max-height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
+
+.content-panel > .flex-grow-1 {
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .search-icon {
   position: absolute;
   top: 50%;
@@ -1238,12 +1726,51 @@ export default {
 }
 
 .budget-table-wrapper {
-  max-height: calc(100vh - 260px);
-  overflow-y: auto;
+  overflow: visible;
 }
 
 textarea {
   min-height: 160px;
   resize: vertical;
+}
+.guest-delete-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.guest-delete-btn {
+  background: transparent;
+  border: none;
+}
+.chat-messages {
+  max-height: calc(100vh - 260px);
+}
+
+.chat-bubble {
+  max-width: 75%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+  position: relative;
+}
+.chat-bubble-me {
+  background: #0d1750;
+  color: #fff;
+  border-bottom-right-radius: 0.2rem;
+}
+.chat-bubble-them {
+  background: #f1f1f1;
+  color: #000;
+  border-bottom-left-radius: 0.2rem;
+}
+.chat-time {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-top: 0.15rem;
+  text-align: right;
+}
+.chat-input textarea {
+  resize: none;
 }
 </style>

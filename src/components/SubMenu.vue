@@ -42,6 +42,92 @@
         </li>
       </ul>
     </div>
+    <div
+      v-else-if="category === 'guests'"
+      class="mt-4 p-3 bg-white rounded-4 shadow-sm"
+    >
+      <h6 class="fw-bold mb-2 text-center">Guests overview</h6>
+
+      <div class="progress rounded-pill mb-2" style="height: 18px">
+        <div
+          class="progress-bar bg-navy"
+          role="progressbar"
+          :style="{ width: guestProgress + '%' }"
+          :aria-valuenow="guestProgress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+
+      <div class="mt-2 small text-muted">
+        <div>
+          Invited (people): <strong>{{ guestStats.totalSeats }}</strong>
+        </div>
+        <div>
+          Confirmed: <strong>{{ guestStats.confirmedSeats }}</strong>
+        </div>
+        <div>
+          Maybe: <strong>{{ guestStats.maybeSeats }}</strong>
+        </div>
+        <div>
+          Declined: <strong>{{ guestStats.declinedSeats }}</strong>
+        </div>
+        <div>
+          Pending: <strong>{{ guestStats.pendingSeats }}</strong>
+        </div>
+      </div>
+    </div>
+    <div v-else-if="category === 'chat'" class="d-flex flex-column flex-grow-1">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold">Chats</h6>
+        <button
+          class="btn btn-sm btn-outline-primary rounded-pill"
+          type="button"
+        >
+          + New
+        </button>
+      </div>
+
+      <ul class="list-unstyled flex-grow-1 overflow-auto mb-0">
+        <li
+          v-for="chat in chats"
+          :key="chat.id"
+          class="chat-item d-flex align-items-center gap-2 mb-2"
+          :class="{ active: 'chat-' + chat.id === activeSub }"
+          @click="$emit('select-sub', 'chat-' + chat.id)"
+        >
+          <div
+            class="chat-avatar rounded-circle d-flex align-items-center justify-content-center"
+          >
+            <span>{{ chat.initials }}</span>
+          </div>
+
+          <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-semibold small">{{ chat.name }}</span>
+              <span class="xsmall text-muted">{{ chat.lastTime }}</span>
+            </div>
+            <div class="xsmall text-muted text-truncate">
+              {{ chat.lastMessage }}
+            </div>
+          </div>
+
+          <span
+            v-if="chat.unread > 0"
+            class="badge bg-danger rounded-pill me-1"
+          >
+            {{ chat.unread }}
+          </span>
+
+          <button
+            class="btn btn-sm p-0 px-1 chat-delete-btn"
+            @click.stop="deleteChat(chat.id)"
+          >
+            <img :src="trash" alt="delete" class="chat-delete-icon" />
+          </button>
+        </li>
+      </ul>
+    </div>
 
     <ul v-else class="list-unstyled mb-0">
       <li
@@ -129,6 +215,10 @@ export default {
       default: () => [],
     },
     activeNoteId: Number,
+    guests: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -150,6 +240,32 @@ export default {
         { id: 3, title: "Guests to call", priority: "low", done: false },
       ],
       trash,
+      chats: [
+        {
+          id: 1,
+          name: "Maid of Honor - Ana",
+          initials: "MA",
+          lastMessage: "Ok, šaljem ti fotke haljine kasnije.",
+          lastTime: "18:42",
+          unread: 2,
+        },
+        {
+          id: 2,
+          name: "Best Man - Marko",
+          initials: "BM",
+          lastMessage: "Jesmo riješili prijevoz za kumove?",
+          lastTime: "17:05",
+          unread: 0,
+        },
+        {
+          id: 3,
+          name: "Bend Joy",
+          initials: "BJ",
+          lastMessage: "Termin nam je slobodan.",
+          lastTime: "Jučer",
+          unread: 1,
+        },
+      ],
     };
   },
   computed: {
@@ -219,8 +335,64 @@ export default {
     progress() {
       return Math.min((this.spent / this.planned) * 100, 100).toFixed(0);
     },
+    guestStats() {
+      const totalInvited = this.guests.length;
+
+      const totalSeats = this.guests.reduce(
+        (sum, g) => sum + (g.seats || 1),
+        0
+      );
+
+      const confirmedSeats = this.guests
+        .filter((g) => g.status === "confirmed")
+        .reduce((sum, g) => sum + (g.seats || 1), 0);
+
+      const declinedSeats = this.guests
+        .filter((g) => g.status === "declined")
+        .reduce((sum, g) => sum + (g.seats || 1), 0);
+
+      const maybeSeats = this.guests
+        .filter((g) => g.status === "maybe")
+        .reduce((sum, g) => sum + (g.seats || 1), 0);
+
+      const pendingSeats =
+        totalSeats - confirmedSeats - declinedSeats - maybeSeats;
+
+      return {
+        totalInvited,
+        totalSeats,
+        confirmedSeats,
+        declinedSeats,
+        maybeSeats,
+        pendingSeats,
+      };
+    },
+
+    guestProgress() {
+      return this.guestStats.totalSeats
+        ? Math.min(
+            (this.guestStats.confirmedSeats / this.guestStats.totalSeats) * 100,
+            100
+          ).toFixed(0)
+        : 0;
+    },
   },
   methods: {
+    deleteChat(id) {
+      const chat = this.chats.find((c) => c.id === id);
+      const title = chat ? chat.name : id;
+
+      if (!confirm(`Želiš li stvarno obrisati razgovor "${title}"?`)) {
+        return;
+      }
+
+      this.chats = this.chats.filter((c) => c.id !== id);
+
+      if (this.activeSub === "chat-" + id) {
+        const first = this.chats[0];
+        this.$emit("select-sub", first ? "chat-" + first.id : "");
+      }
+    },
     addNote() {
       const id = this.notes.length
         ? Math.max(...this.notes.map((n) => n.id)) + 1
@@ -249,7 +421,7 @@ export default {
   background: rgba(244, 231, 204, 0.95);
   border-radius: 1.5rem;
   height: 100%;
-  min-height: calc(100vh - 130px);
+  min-height: calc(100vh - 200px);
 }
 .sub-item {
   background: rgba(255, 255, 255, 0.1);
@@ -317,6 +489,36 @@ export default {
   object-fit: contain;
 }
 .note-delete-btn {
+  background: transparent;
+  border: none;
+}
+.chat-item {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.9rem;
+  transition: 0.15s;
+  cursor: pointer;
+}
+.chat-item.active,
+.chat-item:hover {
+  background: #d4af37;
+  color: #fff;
+}
+.chat-avatar {
+  width: 36px;
+  height: 36px;
+  background: rgba(13, 23, 80, 0.1);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.chat-delete-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.chat-delete-btn {
   background: transparent;
   border: none;
 }
