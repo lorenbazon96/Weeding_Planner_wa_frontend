@@ -7,7 +7,21 @@
           showRings ||
           showShoes ||
           showHairdresser ||
-          showCozmetic
+          showCozmetic ||
+          showTie ||
+          showShoesG ||
+          showShirts ||
+          showSuit ||
+          showHairdresserG ||
+          showBarber ||
+          showBouquet ||
+          showCarFlowers ||
+          showHallFlowers ||
+          showChurchFlowers ||
+          showMusic ||
+          showHalls ||
+          showCakes ||
+          showBands
         "
         class="flex-grow-1 position-relative"
       >
@@ -26,540 +40,621 @@
           showRings ||
           showShoes ||
           showHairdresser ||
-          showCozmetic
+          showCozmetic ||
+          showTie ||
+          showShoesG ||
+          showShirts ||
+          showSuit ||
+          showHairdresserG ||
+          showBarber ||
+          showBouquet ||
+          showCarFlowers ||
+          showHallFlowers ||
+          showChurchFlowers ||
+          showMusic ||
+          showHalls ||
+          showCakes ||
+          showBands
         "
         class="form-select rounded-pill w-auto"
+        v-model="sortBy"
       >
-        <option>Sort by</option>
-        <option>Name</option>
-        <option>Rating</option>
+        <option value="">Sort by</option>
+        <option value="name">Name</option>
+        <option value="rating">Rating</option>
       </select>
     </div>
 
-    <div v-if="showSalons" class="flex-grow-1 overflow-auto pe-1">
-      <SalonCard
-        v-for="salon in filteredSalons"
-        :key="salon.id"
-        :salon="salon"
+    <div v-if="selectedItem" class="flex-grow-1 overflow-auto pe-1">
+      <SalonDetails
+        v-if="selectedItem.type === 'salon'"
+        :salon="selectedItem.data"
+        @back="closeDetails"
+        @open-chat="openChatForItem"
+      />
+      <GenericDetails
+        v-else
+        :item="selectedItem.data"
+        :field-label="getFieldLabel(selectedItem.type)"
+        @back="closeDetails"
+        @open-chat="openChatForItem"
       />
     </div>
+    <template v-else>
+      <div v-if="showSalons" class="flex-grow-1 overflow-auto pe-1">
+        <SalonCard
+          v-for="salon in filteredSalons"
+          :key="salon.id"
+          :salon="salon"
+          @read-more="openItemDetails('salon', salon)"
+        />
+      </div>
 
-    <div v-else-if="showRings" class="flex-grow-1 overflow-auto pe-1">
-      <RingsCard
-        v-for="store in filteredStores"
-        :key="store.id"
-        :store="store"
-      />
-    </div>
+      <div v-else-if="showRings" class="flex-grow-1 overflow-auto pe-1">
+        <RingsCard
+          v-for="store in filteredStores"
+          :key="store.id"
+          :store="store"
+          @read-more="openItemDetails('rings', store)"
+        />
+      </div>
 
-    <div v-else-if="showShoes" class="flex-grow-1 overflow-auto pe-1">
-      <ShoesCard v-for="shop in filteredShops" :key="shop.id" :store="shop" />
-    </div>
+      <div v-else-if="showShoes" class="flex-grow-1 overflow-auto pe-1">
+        <ShoesCard
+          v-for="shop in filteredShops"
+          :key="shop.id"
+          :store="shop"
+          @read-more="openItemDetails('shoes', shop)"
+        />
+      </div>
 
-    <div v-else-if="showHairdresser" class="flex-grow-1 overflow-auto pe-1">
-      <HairdresserCard
-        v-for="salon in filteredHairSalon"
-        :key="salon.id"
-        :store="salon"
-      />
-    </div>
+      <div v-else-if="showHairdresser" class="flex-grow-1 overflow-auto pe-1">
+        <HairdresserCard
+          v-for="salon in filteredHairSalon"
+          :key="salon.id"
+          :store="salon"
+          @read-more="openItemDetails('hairdresser', salon)"
+        />
+      </div>
 
-    <div v-else-if="showCozmetic" class="flex-grow-1 overflow-auto pe-1">
-      <CozmeticCard
-        v-for="salon in filteredCozmetic"
-        :key="salon.id"
-        :store="salon"
-      />
-    </div>
+      <div v-else-if="showCozmetic" class="flex-grow-1 overflow-auto pe-1">
+        <CozmeticCard
+          v-for="salon in filteredCozmetic"
+          :key="salon.id"
+          :store="salon"
+          @read-more="openItemDetails('cozmetic', salon)"
+        />
+      </div>
 
-    <div v-else-if="showMaidOfHonor" class="flex-grow-1 overflow-auto pe-1">
-      <MaidOfHonorCard />
-    </div>
+      <div v-else-if="showMaidOfHonor" class="flex-grow-1 overflow-auto pe-1">
+        <MaidOfHonorCard />
+      </div>
 
-    <div v-else-if="showTie" class="flex-grow-1 overflow-auto pe-1">
-      <TieCard v-for="item in filteredTie" :key="item.id" :tie="item" />
-    </div>
+      <div v-else-if="showTie" class="flex-grow-1 overflow-auto pe-1">
+        <TieCard
+          v-for="item in filteredTie"
+          :key="item.id"
+          :tie="item"
+          @read-more="openItemDetails('tie', item)"
+        />
+      </div>
 
-    <div v-else-if="showShoesG" class="flex-grow-1 overflow-auto pe-1">
-      <ShoesGCard
-        v-for="item in filteredStoresG"
-        :key="item.id"
-        :storeg="item"
-      />
-    </div>
+      <div v-else-if="showShoesG" class="flex-grow-1 overflow-auto pe-1">
+        <ShoesGCard
+          v-for="item in filteredStoresG"
+          :key="item.id"
+          :storeg="item"
+          @read-more="openItemDetails('shoesG', item)"
+        />
+      </div>
 
-    <div v-else-if="showShirts" class="flex-grow-1 overflow-auto pe-1">
-      <ShirtCard
-        v-for="shirt in filteredShirts"
-        :key="shirt.id"
-        :shirt="shirt"
-      />
-    </div>
+      <div v-else-if="showShirts" class="flex-grow-1 overflow-auto pe-1">
+        <ShirtCard
+          v-for="shirt in filteredShirts"
+          :key="shirt.id"
+          :shirt="shirt"
+          @read-more="openItemDetails('shirt', shirt)"
+        />
+      </div>
 
-    <div v-else-if="showSuit" class="flex-grow-1 overflow-auto pe-1">
-      <SuitCard v-for="item in filteredSuits" :key="item.id" :suit="item" />
-    </div>
+      <div v-else-if="showSuit" class="flex-grow-1 overflow-auto pe-1">
+        <SuitCard
+          v-for="item in filteredSuits"
+          :key="item.id"
+          :suit="item"
+          @read-more="openItemDetails('suit', item)"
+        />
+      </div>
 
-    <div v-else-if="showHairdresserG" class="flex-grow-1 overflow-auto pe-1">
-      <HairdresserGCard
-        v-for="hairdresser in filteredHairdresserG"
-        :key="hairdresser.id"
-        :hairdresser="hairdresser"
-      />
-    </div>
+      <div v-else-if="showHairdresserG" class="flex-grow-1 overflow-auto pe-1">
+        <HairdresserGCard
+          v-for="hairdresser in filteredHairdresserG"
+          :key="hairdresser.id"
+          :hairdresser="hairdresser"
+          @read-more="openItemDetails('hairdresserG', hairdresser)"
+        />
+      </div>
 
-    <div v-else-if="showBarber" class="flex-grow-1 overflow-auto pe-1">
-      <BarberCard
-        v-for="barber in filteredBarbers"
-        :key="barber.id"
-        :barber="barber"
-      />
-    </div>
-    <div v-else-if="showBestMan" class="flex-grow-1 overflow-auto pe-1">
-      <BestManCard />
-    </div>
+      <div v-else-if="showBarber" class="flex-grow-1 overflow-auto pe-1">
+        <BarberCard
+          v-for="barber in filteredBarbers"
+          :key="barber.id"
+          :barber="barber"
+          @read-more="openItemDetails('barber', barber)"
+        />
+      </div>
+      <div v-else-if="showBestMan" class="flex-grow-1 overflow-auto pe-1">
+        <BestManCard />
+      </div>
 
-    <div v-else-if="showLapel" class="flex-grow-1 overflow-auto pe-1">
-      <LapelCard />
-    </div>
-    <div v-else-if="showBouquet" class="flex-grow-1 overflow-auto pe-1">
-      <BouquetCard
-        v-for="flower in flowers"
-        :key="flower.id"
-        :flower="flower"
-      />
-    </div>
-    <div v-else-if="showCarFlowers" class="flex-grow-1 overflow-auto pe-1">
-      <CarFlowersCard
-        v-for="car in filteredCarFlowers"
-        :key="car.id"
-        :car="car"
-      />
-    </div>
-    <div v-else-if="showHallFlowers" class="flex-grow-1 overflow-auto pe-1">
-      <HallFlowersCard
-        v-for="hall in filteredHallFlowers"
-        :key="hall.id"
-        :hall="hall"
-      />
-    </div>
-    <div v-else-if="showChurchFlowers" class="flex-grow-1 overflow-auto pe-1">
-      <ChurchFlowersCard
-        v-for="church in filteredChurchFlowers"
-        :key="church.id"
-        :church="church"
-      />
-    </div>
+      <div v-else-if="showLapel" class="flex-grow-1 overflow-auto pe-1">
+        <LapelCard />
+      </div>
+      <div v-else-if="showBouquet" class="flex-grow-1 overflow-auto pe-1">
+        <BouquetCard
+          v-for="flower in filteredFlowers"
+          :key="flower.id"
+          :flower="flower"
+          @read-more="openItemDetails('bouquet', flower)"
+        />
+      </div>
 
-    <div v-else-if="showDateAndTime" class="flex-grow-1 overflow-auto pe-1">
-      <DateAndTimeCard />
-    </div>
+      <div v-else-if="showCarFlowers" class="flex-grow-1 overflow-auto pe-1">
+        <CarFlowersCard
+          v-for="car in filteredCarFlowers"
+          :key="car.id"
+          :car="car"
+          @read-more="openItemDetails('carFlowers', car)"
+        />
+      </div>
+      <div v-else-if="showHallFlowers" class="flex-grow-1 overflow-auto pe-1">
+        <HallFlowersCard
+          v-for="hall in filteredHallFlowers"
+          :key="hall.id"
+          :hall="hall"
+          @read-more="openItemDetails('hallFlowers', hall)"
+        />
+      </div>
+      <div v-else-if="showChurchFlowers" class="flex-grow-1 overflow-auto pe-1">
+        <ChurchFlowersCard
+          v-for="church in filteredChurchFlowers"
+          :key="church.id"
+          :church="church"
+          @read-more="openItemDetails('churchFlowers', church)"
+        />
+      </div>
 
-    <div v-else-if="showEngagement" class="flex-grow-1 overflow-auto pe-1">
-      <EngagementCard />
-    </div>
+      <div v-else-if="showDateAndTime" class="flex-grow-1 overflow-auto pe-1">
+        <DateAndTimeCard />
+      </div>
 
-    <div v-else-if="showMusic" class="flex-grow-1 overflow-auto pe-1">
-      <MusicCard
-        v-for="music in filteredMusic"
-        :key="music.id"
-        :music="music"
-      />
-    </div>
+      <div v-else-if="showEngagement" class="flex-grow-1 overflow-auto pe-1">
+        <EngagementCard />
+      </div>
 
-    <div
-      v-else-if="category === 'church' && sub === 'A Priest'"
-      class="flex-grow-1 overflow-auto pe-1"
-    >
-      <APriestCard />
-    </div>
+      <div v-else-if="showMusic" class="flex-grow-1 overflow-auto pe-1">
+        <MusicCard
+          v-for="music in filteredMusic"
+          :key="music.id"
+          :music="music"
+          @read-more="openItemDetails('music', music)"
+        />
+      </div>
 
-    <div
-      v-else-if="category === 'church' && sub === 'Readers'"
-      class="flex-grow-1 overflow-auto pe-1"
-    >
-      <ReadersCard />
-    </div>
+      <div
+        v-else-if="category === 'church' && sub === 'A Priest'"
+        class="flex-grow-1 overflow-auto pe-1"
+      >
+        <APriestCard />
+      </div>
 
-    <div v-else-if="showDocuments" class="flex-grow-1 overflow-auto pe-1">
-      <DocumentCard />
-    </div>
+      <div
+        v-else-if="category === 'church' && sub === 'Readers'"
+        class="flex-grow-1 overflow-auto pe-1"
+      >
+        <ReadersCard />
+      </div>
 
-    <div v-else-if="showConfetti" class="flex-grow-1 overflow-auto pe-1">
-      <ConfettiCard />
-    </div>
+      <div v-else-if="showDocuments" class="flex-grow-1 overflow-auto pe-1">
+        <DocumentCard />
+      </div>
 
-    <div v-else-if="showHalls" class="flex-grow-1 overflow-auto pe-1">
-      <HallCard v-for="hall in filteredHalls" :key="hall.id" :hall="hall" />
-    </div>
+      <div v-else-if="showConfetti" class="flex-grow-1 overflow-auto pe-1">
+        <ConfettiCard />
+      </div>
 
-    <div v-else-if="showMenu" class="flex-grow-1 overflow-auto pe-1">
-      <MenuCard />
-    </div>
+      <div v-else-if="showHalls" class="flex-grow-1 overflow-auto pe-1">
+        <HallCard
+          v-for="hall in filteredHalls"
+          :key="hall.id"
+          :hall="hall"
+          @read-more="openItemDetails('hall', hall)"
+        />
+      </div>
 
-    <div v-else-if="showCakes" class="flex-grow-1 overflow-auto pe-1">
-      <CakeCard v-for="cake in filteredCakes" :key="cake.id" :cake="cake" />
-    </div>
+      <div v-else-if="showMenu" class="flex-grow-1 overflow-auto pe-1">
+        <MenuCard />
+      </div>
 
-    <div v-else-if="showBands" class="flex-grow-1 overflow-auto pe-1">
-      <BandCard v-for="band in filteredBands" :key="band.id" :band="band" />
-    </div>
+      <div v-else-if="showCakes" class="flex-grow-1 overflow-auto pe-1">
+        <CakeCard
+          v-for="cake in filteredCakes"
+          :key="cake.id"
+          :cake="cake"
+          @read-more="openItemDetails('cake', cake)"
+        />
+      </div>
 
-    <div v-else-if="showDance" class="flex-grow-1 overflow-auto pe-1">
-      <DanceCard />
-    </div>
+      <div v-else-if="showBands" class="flex-grow-1 overflow-auto pe-1">
+        <BandCard
+          v-for="band in filteredBands"
+          :key="band.id"
+          :band="band"
+          @read-more="openItemDetails('band', band)"
+        />
+      </div>
 
-    <div v-else-if="showBudget" class="flex-grow-1 overflow-auto pe-1">
-      <div class="bg-white rounded-4 shadow-sm p-3">
-        <h5 class="fw-bold mb-3 text-center">Wedding Budget Items</h5>
+      <div v-else-if="showDance" class="flex-grow-1 overflow-auto pe-1">
+        <DanceCard />
+      </div>
 
-        <div class="budget-table-wrapper">
-          <table class="table table-sm align-middle text-center mb-0">
-            <thead class="table-light sticky-top">
+      <div v-else-if="showBudget" class="flex-grow-1 overflow-auto pe-1">
+        <div class="bg-white rounded-4 shadow-sm p-3">
+          <h5 class="fw-bold mb-3 text-center">Wedding Budget Items</h5>
+
+          <div class="budget-table-wrapper">
+            <table class="table table-sm align-middle text-center mb-0">
+              <thead class="table-light sticky-top">
+                <tr>
+                  <th class="text-start">Item</th>
+                  <th style="width: 120px">Planned (€)</th>
+                  <th style="width: 120px">Spent (€)</th>
+                  <th style="width: 180px">Document</th>
+                  <th style="width: 110px">Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in budgetItems" :key="item.label">
+                  <td class="text-start">
+                    <span class="d-flex align-items-center gap-2">
+                      <img
+                        v-if="item.icon"
+                        :src="item.icon"
+                        alt=""
+                        class="icon-img"
+                      />
+                      {{ item.label }}
+                    </span>
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="form-control form-control-sm text-center"
+                      v-model.number="item.planned"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="form-control form-control-sm text-center"
+                      v-model.number="item.spent"
+                    />
+                  </td>
+                  <td>
+                    <input type="file" class="form-control form-control-sm" />
+                  </td>
+                  <td>
+                    <span
+                      :class="{
+                        'text-success': item.planned - item.spent > 0,
+                        'text-danger': item.planned - item.spent < 0,
+                      }"
+                    >
+                      {{ item.planned - item.spent }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div v-else-if="showNotes" class="flex-grow-1 p-3 d-flex flex-column">
+        <div
+          class="bg-white rounded-4 shadow-sm p-3 h-100 d-flex flex-column gap-3"
+        >
+          <div class="d-flex gap-2">
+            <input
+              v-model="currentNote.title"
+              type="text"
+              class="form-control"
+              placeholder="Note title..."
+            />
+            <select
+              v-model="currentNote.priority"
+              class="form-select"
+              style="max-width: 150px"
+            >
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <div class="form-check d-flex align-items-center gap-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                v-model="currentNote.done"
+                :id="'note-done-' + currentNote.id"
+              />
+              <label
+                class="form-check-label small"
+                :for="'note-done-' + currentNote.id"
+              >
+                Done
+              </label>
+            </div>
+          </div>
+
+          <textarea
+            v-model="currentNote.text"
+            class="form-control flex-grow-1"
+            placeholder="Write your note here..."
+          ></textarea>
+
+          <div class="d-flex gap-3 align-items-center">
+            <div>
+              <label class="form-label small mb-1">Attach image</label>
+              <input type="file" class="form-control form-control-sm" />
+            </div>
+            <div
+              v-if="currentNote.image"
+              class="border rounded p-1"
+              style="width: 90px; height: 90px; overflow: hidden"
+            >
+              <img
+                :src="currentNote.image"
+                alt=""
+                class="w-100 h-100 object-fit-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-else-if="showGuests"
+        class="flex-grow-1 d-flex flex-column overflow-auto pe-1"
+      >
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <select
+            v-model="guestFilterStatus"
+            class="form-select form-select-sm w-auto rounded-pill"
+          >
+            <option value="all">All statuses</option>
+            <option value="invited">Invited</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="declined">Declined</option>
+            <option value="maybe">Maybe</option>
+          </select>
+
+          <select
+            v-model="guestFilterSide"
+            class="form-select form-select-sm w-auto rounded-pill"
+          >
+            <option value="all">Both sides</option>
+            <option value="bride">Bride's side</option>
+            <option value="groom">Groom's side</option>
+          </select>
+
+          <select
+            v-model="guestSort"
+            class="form-select form-select-sm w-auto rounded-pill ms-auto"
+          >
+            <option value="name-asc">Name A–Z</option>
+            <option value="name-desc">Name Z–A</option>
+            <option value="status">By status</option>
+            <option value="side">By side</option>
+          </select>
+        </div>
+
+        <div class="bg-white rounded-4 shadow-sm p-3 flex-grow-1 overflow-auto">
+          <table class="table table-sm align-middle">
+            <thead class="table-light">
               <tr>
-                <th class="text-start">Item</th>
-                <th style="width: 120px">Planned (€)</th>
-                <th style="width: 120px">Spent (€)</th>
-                <th style="width: 180px">Document</th>
-                <th style="width: 110px">Remaining</th>
+                <th>Name</th>
+                <th>Side</th>
+                <th>Group</th>
+                <th>Status</th>
+                <th class="text-center">Seats</th>
+                <th>Note</th>
+                <th class="text-center" style="width: 70px">Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              <tr v-for="item in budgetItems" :key="item.label">
-                <td class="text-start">
-                  <span class="d-flex align-items-center gap-2">
-                    <img
-                      v-if="item.icon"
-                      :src="item.icon"
-                      alt=""
-                      class="icon-img"
-                    />
-                    {{ item.label }}
-                  </span>
-                </td>
+              <tr v-for="guest in filteredGuests" :key="guest.id">
+                <td>{{ guest.name }}</td>
+                <td class="text-capitalize">{{ guest.side }}</td>
+                <td class="text-capitalize">{{ guest.group }}</td>
                 <td>
-                  <input
-                    type="number"
-                    class="form-control form-control-sm text-center"
-                    v-model.number="item.planned"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="form-control form-control-sm text-center"
-                    v-model.number="item.spent"
-                  />
-                </td>
-                <td>
-                  <input type="file" class="form-control form-control-sm" />
-                </td>
-                <td>
-                  <span
-                    :class="{
-                      'text-success': item.planned - item.spent > 0,
-                      'text-danger': item.planned - item.spent < 0,
-                    }"
+                  <select
+                    v-model="guest.status"
+                    class="form-select form-select-sm"
                   >
-                    {{ item.planned - item.spent }}
-                  </span>
+                    <option value="invited">Invited</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="declined">Declined</option>
+                    <option value="maybe">Maybe</option>
+                  </select>
+                </td>
+                <td class="text-center">
+                  <input
+                    type="number"
+                    min="1"
+                    class="form-control form-control-sm text-center"
+                    v-model.number="guest.seats"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    v-model="guest.note"
+                    placeholder="Note..."
+                  />
+                </td>
+                <td class="text-center">
+                  <button
+                    class="btn btn-sm p-0 px-1 guest-delete-btn"
+                    @click="deleteGuest(guest.id)"
+                  >
+                    <img :src="trash" alt="delete" class="guest-delete-icon" />
+                  </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
 
-    <div v-else-if="showNotes" class="flex-grow-1 p-3 d-flex flex-column">
-      <div
-        class="bg-white rounded-4 shadow-sm p-3 h-100 d-flex flex-column gap-3"
-      >
-        <div class="d-flex gap-2">
-          <input
-            v-model="currentNote.title"
-            type="text"
-            class="form-control"
-            placeholder="Note title..."
-          />
-          <select
-            v-model="currentNote.priority"
-            class="form-select"
-            style="max-width: 150px"
-          >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <div class="form-check d-flex align-items-center gap-2">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              v-model="currentNote.done"
-              :id="'note-done-' + currentNote.id"
-            />
-            <label
-              class="form-check-label small"
-              :for="'note-done-' + currentNote.id"
-            >
-              Done
-            </label>
+        <div class="mt-3 bg-white rounded-4 shadow-sm p-3">
+          <h6 class="fw-bold mb-2">Add guest</h6>
+          <div class="row g-2">
+            <div class="col-md-3">
+              <input
+                v-model="newGuest.name"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Name and surname"
+              />
+            </div>
+            <div class="col-md-2">
+              <select
+                v-model="newGuest.side"
+                class="form-select form-select-sm"
+              >
+                <option value="bride">Bride</option>
+                <option value="groom">Groom</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select
+                v-model="newGuest.group"
+                class="form-select form-select-sm"
+              >
+                <option value="family">Family</option>
+                <option value="friends">Friends</option>
+                <option value="colleagues">Colleagues</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <input
+                v-model.number="newGuest.seats"
+                type="number"
+                min="1"
+                class="form-control form-control-sm"
+                placeholder="Seats"
+              />
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+              <input
+                v-model="newGuest.note"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Note (optional)"
+              />
+              <button
+                class="btn btn-sm btn-primary rounded-pill"
+                @click="addGuest"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
-
-        <textarea
-          v-model="currentNote.text"
-          class="form-control flex-grow-1"
-          placeholder="Write your note here..."
-        ></textarea>
-
-        <div class="d-flex gap-3 align-items-center">
+      </div>
+      <div v-else-if="showChat" class="flex-grow-1 d-flex flex-column">
+        <div
+          class="d-flex align-items-center justify-content-between mb-2 px-2"
+        >
           <div>
-            <label class="form-label small mb-1">Attach image</label>
-            <input type="file" class="form-control form-control-sm" />
+            <h6 class="mb-0 fw-bold">{{ currentChatTitle }}</h6>
           </div>
-          <div
-            v-if="currentNote.image"
-            class="border rounded p-1"
-            style="width: 90px; height: 90px; overflow: hidden"
-          >
-            <img
-              :src="currentNote.image"
-              alt=""
-              class="w-100 h-100 object-fit-cover"
-            />
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-success rounded-pill">Online</span>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div
-      v-else-if="showGuests"
-      class="flex-grow-1 d-flex flex-column overflow-auto pe-1"
-    >
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <select
-          v-model="guestFilterStatus"
-          class="form-select form-select-sm w-auto rounded-pill"
+        <div
+          class="chat-messages flex-grow-1 mb-3 p-3 rounded-4 bg-white shadow-sm overflow-auto"
         >
-          <option value="all">All statuses</option>
-          <option value="invited">Invited</option>
-          <option value="confirmed">Confirmed</option>
-          <option value="declined">Declined</option>
-          <option value="maybe">Maybe</option>
-        </select>
-
-        <select
-          v-model="guestFilterSide"
-          class="form-select form-select-sm w-auto rounded-pill"
-        >
-          <option value="all">Both sides</option>
-          <option value="bride">Bride's side</option>
-          <option value="groom">Groom's side</option>
-        </select>
-
-        <select
-          v-model="guestSort"
-          class="form-select form-select-sm w-auto rounded-pill ms-auto"
-        >
-          <option value="name-asc">Name A–Z</option>
-          <option value="name-desc">Name Z–A</option>
-          <option value="status">By status</option>
-          <option value="side">By side</option>
-        </select>
-      </div>
-
-      <div class="bg-white rounded-4 shadow-sm p-3 flex-grow-1 overflow-auto">
-        <table class="table table-sm align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>Name</th>
-              <th>Side</th>
-              <th>Group</th>
-              <th>Status</th>
-              <th class="text-center">Seats</th>
-              <th>Note</th>
-              <th class="text-center" style="width: 70px">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="guest in filteredGuests" :key="guest.id">
-              <td>{{ guest.name }}</td>
-              <td class="text-capitalize">{{ guest.side }}</td>
-              <td class="text-capitalize">{{ guest.group }}</td>
-              <td>
-                <select
-                  v-model="guest.status"
-                  class="form-select form-select-sm"
-                >
-                  <option value="invited">Invited</option>
-                  <option value="confirmed">Confirmed</option>
-                  <option value="declined">Declined</option>
-                  <option value="maybe">Maybe</option>
-                </select>
-              </td>
-              <td class="text-center">
-                <input
-                  type="number"
-                  min="1"
-                  class="form-control form-control-sm text-center"
-                  v-model.number="guest.seats"
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  v-model="guest.note"
-                  placeholder="Note..."
-                />
-              </td>
-              <td class="text-center">
-                <button
-                  class="btn btn-sm p-0 px-1 guest-delete-btn"
-                  @click="deleteGuest(guest.id)"
-                >
-                  <img :src="trash" alt="delete" class="guest-delete-icon" />
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="mt-3 bg-white rounded-4 shadow-sm p-3">
-        <h6 class="fw-bold mb-2">Add guest</h6>
-        <div class="row g-2">
-          <div class="col-md-3">
-            <input
-              v-model="newGuest.name"
-              type="text"
-              class="form-control form-control-sm"
-              placeholder="Name and surname"
-            />
-          </div>
-          <div class="col-md-2">
-            <select v-model="newGuest.side" class="form-select form-select-sm">
-              <option value="bride">Bride</option>
-              <option value="groom">Groom</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <select v-model="newGuest.group" class="form-select form-select-sm">
-              <option value="family">Family</option>
-              <option value="friends">Friends</option>
-              <option value="colleagues">Colleagues</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="col-md-2">
-            <input
-              v-model.number="newGuest.seats"
-              type="number"
-              min="1"
-              class="form-control form-control-sm"
-              placeholder="Seats"
-            />
-          </div>
-          <div class="col-md-3 d-flex gap-2">
-            <input
-              v-model="newGuest.note"
-              type="text"
-              class="form-control form-control-sm"
-              placeholder="Note (optional)"
-            />
-            <button
-              class="btn btn-sm btn-primary rounded-pill"
-              @click="addGuest"
+          <div
+            v-for="msg in currentChatMessages"
+            :key="msg.id"
+            class="d-flex mb-2"
+            :class="{
+              'justify-content-end': msg.from === 'me',
+              'justify-content-start': msg.from === 'them',
+            }"
+          >
+            <div
+              class="chat-bubble"
+              :class="{
+                'chat-bubble-me': msg.from === 'me',
+                'chat-bubble-them': msg.from === 'them',
+              }"
             >
-              Save
+              <div v-if="msg.type === 'text'">
+                {{ msg.text }}
+              </div>
+              <div v-else-if="msg.type === 'file'">📎 {{ msg.text }}</div>
+              <div class="chat-time">{{ msg.time }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input mt-auto">
+          <div
+            class="bg-white rounded-4 shadow-sm p-2 d-flex align-items-center gap-2"
+          >
+            <label class="btn btn-light btn-sm mb-0 rounded-circle">
+              📎
+              <input
+                type="file"
+                class="d-none"
+                multiple
+                @change="onChatFilesChange"
+              />
+            </label>
+
+            <textarea
+              v-model="newChatMessage"
+              class="form-control border-0 flex-grow-1"
+              rows="1"
+              placeholder="Write a message..."
+              @keyup.enter.exact.prevent="sendChatMessage"
+            ></textarea>
+
+            <button
+              class="btn btn-primary rounded-pill btn-sm px-3"
+              type="button"
+              @click="sendChatMessage"
+            >
+              Send
             </button>
           </div>
         </div>
       </div>
-    </div>
-    <div v-else-if="showChat" class="flex-grow-1 d-flex flex-column">
-      <div class="d-flex align-items-center justify-content-between mb-2 px-2">
-        <div>
-          <h6 class="mb-0 fw-bold">{{ currentChatTitle }}</h6>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge bg-success rounded-pill">Online</span>
-        </div>
-      </div>
 
       <div
-        class="chat-messages flex-grow-1 mb-3 p-3 rounded-4 bg-white shadow-sm overflow-auto"
+        v-else
+        class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
       >
-        <div
-          v-for="msg in currentChatMessages"
-          :key="msg.id"
-          class="d-flex mb-2"
-          :class="{
-            'justify-content-end': msg.from === 'me',
-            'justify-content-start': msg.from === 'them',
-          }"
-        >
-          <div
-            class="chat-bubble"
-            :class="{
-              'chat-bubble-me': msg.from === 'me',
-              'chat-bubble-them': msg.from === 'them',
-            }"
-          >
-            <div v-if="msg.type === 'text'">
-              {{ msg.text }}
-            </div>
-            <div v-else-if="msg.type === 'file'">📎 {{ msg.text }}</div>
-            <div class="chat-time">{{ msg.time }}</div>
-          </div>
-        </div>
+        <h4 class="mb-2 text-muted">Please select some tab in left menu</h4>
       </div>
-
-      <div class="chat-input mt-auto">
-        <div
-          class="bg-white rounded-4 shadow-sm p-2 d-flex align-items-center gap-2"
-        >
-          <label class="btn btn-light btn-sm mb-0 rounded-circle">
-            📎
-            <input
-              type="file"
-              class="d-none"
-              multiple
-              @change="onChatFilesChange"
-            />
-          </label>
-
-          <textarea
-            v-model="newChatMessage"
-            class="form-control border-0 flex-grow-1"
-            rows="1"
-            placeholder="Write a message..."
-            @keyup.enter.exact.prevent="sendChatMessage"
-          ></textarea>
-
-          <button
-            class="btn btn-primary rounded-pill btn-sm px-3"
-            type="button"
-            @click="sendChatMessage"
-          >
-            Send
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div
-      v-else
-      class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
-    >
-      <h4 class="mb-2 text-muted">This section will have its own page</h4>
-      <p class="text-muted">
-        Budget, notes, guests, chat ... will lead to different components.
-      </p>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -626,9 +721,14 @@ import cake from "@/assets/cake.png";
 import dance from "@/assets/dance.png";
 import trash from "@/assets/trash.png";
 
+import SalonDetails from "./SalonDetails.vue";
+import GenericDetails from "./GenericDetails.vue";
+
 export default {
   name: "ContentPanel",
   components: {
+    SalonDetails,
+    GenericDetails,
     SalonCard,
     RingsCard,
     ShoesCard,
@@ -671,6 +771,8 @@ export default {
   data() {
     return {
       search: "",
+      sortBy: "",
+      selectedItem: null,
       notesData: [
         {
           id: 1,
@@ -1061,7 +1163,7 @@ export default {
         {
           id: 1,
           name: "Cvjećarnica Ljubica",
-          img: "https://example.com/flora.jpg",
+          img: "https://picsum.photos/420/200?random=510",
           rating: 4.9,
           address: "Meštrovićev trg 2",
           status: "Open until 20:00",
@@ -1069,7 +1171,7 @@ export default {
         {
           id: 2,
           name: "Cvjećarnica Orhideja",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=509",
           rating: 4.8,
           address: "Horvaćanska cesta 26",
           status: "Closes soon",
@@ -1077,7 +1179,7 @@ export default {
         {
           id: 3,
           name: "Cvjećarnica Ljiljana",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=508",
           rating: 4.8,
           address: "Ilica 26",
           status: "Closes soon",
@@ -1085,7 +1187,7 @@ export default {
         {
           id: 4,
           name: "Cvjećarnica Ruža",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=507",
           rating: 4.8,
           address: "Tkalčićeva 15, 10000 Zagreb",
           status: "Closes soon",
@@ -1095,7 +1197,7 @@ export default {
         {
           id: 1,
           name: "Cvjećarnica Ljubica",
-          img: "https://example.com/flora.jpg",
+          img: "https://picsum.photos/420/200?random=506",
           rating: 4.9,
           address: "Meštrovićev trg 2",
           status: "Open until 20:00",
@@ -1103,7 +1205,7 @@ export default {
         {
           id: 2,
           name: "Cvjećarnica Orhideja",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=505",
           rating: 4.8,
           address: "Horvaćanska cesta 26",
           status: "Closes soon",
@@ -1113,7 +1215,7 @@ export default {
         {
           id: 1,
           name: "Cvjećarnica Ljubica",
-          img: "https://example.com/flora.jpg",
+          img: "https://picsum.photos/420/200?random=504",
           rating: 4.9,
           address: "Meštrovićev trg 2",
           status: "Open until 20:00",
@@ -1121,7 +1223,7 @@ export default {
         {
           id: 2,
           name: "Cvjećarnica Orhideja",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=503",
           rating: 4.8,
           address: "Horvaćanska cesta 26",
           status: "Closes soon",
@@ -1131,7 +1233,7 @@ export default {
         {
           id: 1,
           name: "Cvjećarnica Ljubica",
-          img: "https://example.com/flora.jpg",
+          img: "https://picsum.photos/420/200?random=502",
           rating: 4.9,
           address: "Meštrovićev trg 2",
           status: "Open until 20:00",
@@ -1139,7 +1241,7 @@ export default {
         {
           id: 2,
           name: "Cvjećarnica Orhideja",
-          img: "https://example.com/rose.jpg",
+          img: "https://picsum.photos/420/200?random=501",
           rating: 4.8,
           address: "Horvaćanska cesta 26",
           status: "Closes soon",
@@ -1193,7 +1295,7 @@ export default {
         {
           id: 1,
           name: "Jolie Pettite",
-          img: "https://example.com/cake.jpg",
+          img: "https://picsum.photos/420/200?random=221",
           rating: "4.9",
           address: "Magazinska 12, Zagreb",
           status: "Open now",
@@ -1201,7 +1303,7 @@ export default {
         {
           id: 2,
           name: "Vincek",
-          img: "https://example.com/cake.jpg",
+          img: "https://picsum.photos/420/200?random=220",
           rating: "4.9",
           address: "Magazinska 12, Zagreb",
           status: "Open now",
@@ -1234,11 +1336,6 @@ export default {
         },
       ],
       trash,
-      chatTitles: {
-        "chat-1": "Maid of Honor – Ana",
-        "chat-2": "Best Man – Marko",
-        "chat-3": "Bend Joy",
-      },
       chatMessages: {
         1: [
           {
@@ -1309,26 +1406,21 @@ export default {
     };
   },
   computed: {
-    currentChatTitle() {
-      if (!this.sub) return "Chat";
-
-      if (this.chatTitles && this.chatTitles[this.sub]) {
-        return this.chatTitles[this.sub];
-      }
-
-      return this.sub;
-    },
     showChat() {
       return this.category === "chat";
     },
-
     currentChatId() {
       if (!this.showChat) return null;
-      const id =
-        this.sub && this.sub.startsWith("chat-")
-          ? Number(this.sub.replace("chat-", ""))
-          : 1;
-      return id;
+      return this.sub && this.sub.startsWith("chat-")
+        ? Number(this.sub.replace("chat-", ""))
+        : null;
+    },
+    currentChatTitle() {
+      if (!this.showChat) return "Chat";
+
+      const id = this.currentChatId;
+      const chat = this.chats.find((c) => c.id === id);
+      return chat ? chat.title : "Chat";
     },
 
     currentChatMessages() {
@@ -1337,6 +1429,17 @@ export default {
     },
     showGuests() {
       return this.category === "guests";
+    },
+
+    filteredFlowers() {
+      let list = this.flowers;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
 
     filteredGuests() {
@@ -1477,112 +1580,186 @@ export default {
     },
 
     filteredSalons() {
-      if (!this.search) return this.salons;
-      return this.salons.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.salons;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
+
     filteredStores() {
-      if (!this.search) return this.stores;
-      return this.stores.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.stores;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
+
     filteredShops() {
-      if (!this.search) return this.shops;
-      return this.shops.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.shops;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredHairSalon() {
-      if (!this.search) return this.hairSalon;
-      return this.hairSalon.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.hairSalon;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredCozmetic() {
-      if (!this.search) return this.cozmeticSalon;
-      return this.cozmeticSalon.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.cozmeticSalon;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredTie() {
-      if (!this.search) return this.ties;
-      return this.ties.filter((t) =>
-        t.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.ties;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredStoresG() {
-      if (!this.search) return this.shopsg;
-      return this.shopsg.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.shopsg;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredShirts() {
-      if (!this.search) return this.shirts;
-      return this.shirts.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.shirts;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredSuits() {
-      if (!this.search) return this.suits;
-      return this.suits.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.suits;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredHairdresserG() {
-      if (!this.search) return this.hairSalonG;
-      return this.hairSalonG.filter((s) =>
-        s.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.hairSalonG;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredBarbers() {
-      if (!this.search) return this.barbers;
-      return this.barbers.filter((b) =>
-        b.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.barbers;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredCarFlowers() {
-      if (!this.search) return this.carFlowers;
-      return this.carFlowers.filter((b) =>
-        b.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.carFlowers;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredHallFlowers() {
-      if (!this.search) return this.hallFlowers;
-      return this.hallFlowers.filter((h) =>
-        h.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.hallFlowers;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredChurchFlowers() {
-      if (!this.search) return this.churchFlowers;
-      return this.churchFlowers.filter((c) =>
-        c.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.churchFlowers;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredMusic() {
-      if (!this.search) return this.music;
-      return this.music.filter((b) =>
-        b.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.music;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredHalls() {
-      if (!this.search) return this.halls;
-      return this.halls.filter((h) =>
-        h.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.halls;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredCakes() {
-      if (!this.search) return this.cakes;
-      return this.cakes.filter((c) =>
-        c.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.cakes;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
     filteredBands() {
-      if (!this.search) return this.band;
-      return this.band.filter((b) =>
-        b.name.toLowerCase().includes(this.search.toLowerCase())
-      );
+      let list = this.band;
+
+      if (this.search) {
+        const q = this.search.toLowerCase();
+        list = list.filter((s) => s.name.toLowerCase().includes(q));
+      }
+
+      return this.sortList(list);
     },
 
     showBudget() {
@@ -1601,7 +1778,41 @@ export default {
       return this.notesData.find((n) => n.id === id) || this.notesData[0];
     },
   },
+  watch: {
+    category() {
+      this.selectedItem = null;
+    },
+    sub() {
+      this.selectedItem = null;
+    },
+  },
   methods: {
+    sortList(list) {
+      if (this.sortBy === "name") {
+        return [...list].sort((a, b) => a.name.localeCompare(b.name));
+      }
+      if (this.sortBy === "rating") {
+        return [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      }
+      return list;
+    },
+    openItemDetails(type, item) {
+      this.selectedItem = { type, data: item };
+    },
+    closeDetails() {
+      this.selectedItem = null;
+    },
+    openChatForItem() {
+      if (!this.selectedItem) return;
+
+      const { type, data } = this.selectedItem;
+
+      this.$emit("open-chat", {
+        type,
+        subjectId: data.id,
+        title: data.name,
+      });
+    },
     sendChatMessage() {
       const text = this.newChatMessage.trim();
       if (!text && !this.newChatFiles.length) return;
@@ -1610,7 +1821,7 @@ export default {
       if (!id) return;
 
       if (!this.chatMessages[id]) {
-        this.$set(this.chatMessages, id, []);
+        this.chatMessages[id] = [];
       }
 
       if (text) {
@@ -1627,7 +1838,7 @@ export default {
         });
       }
 
-      this.newChatFiles.forEach((file, index) => {
+      this.newChatFiles.forEach((file) => {
         const newId = this.chatMessages[id].length
           ? Math.max(...this.chatMessages[id].map((m) => m.id)) + 1
           : 1;
@@ -1691,6 +1902,29 @@ export default {
         image: "",
       });
       this.activeNoteId = newId;
+    },
+    getFieldLabel(type) {
+      const labels = {
+        rings: "Ring style",
+        shoes: "Shoe style",
+        hairdresser: "Hairstyle",
+        cozmetic: "Treatment",
+        tie: "Tie style",
+        shoesG: "Shoe style",
+        shirt: "Shirt style",
+        suit: "Suit style",
+        hairdresserG: "Hairstyle",
+        barber: "Haircut style",
+        bouquet: "Bouquet style",
+        carFlowers: "Car decoration",
+        hallFlowers: "Hall decoration",
+        churchFlowers: "Church decoration",
+        music: "Music style",
+        hall: "Hall capacity",
+        cake: "Cake style",
+        band: "Music genre",
+      };
+      return labels[type] || "Details";
     },
   },
 };

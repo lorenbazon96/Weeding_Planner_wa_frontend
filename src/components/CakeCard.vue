@@ -20,7 +20,10 @@
           </div>
 
           <div>
-            <button class="btn btn-dark rounded-pill px-4 py-1">
+            <button
+              class="btn btn-dark rounded-pill px-4 py-1"
+              @click="$emit('read-more', cake)"
+            >
               View cakes
             </button>
           </div>
@@ -36,6 +39,7 @@ export default {
   props: {
     cake: { type: Object, required: true },
   },
+  emits: ["read-more"],
 };
 </script>
 

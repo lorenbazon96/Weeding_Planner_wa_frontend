@@ -30,12 +30,19 @@
           <SubMenu
             :category="currentCategory"
             :active-sub="currentSub"
+            :chats="chats"
             @select-sub="currentSub = $event"
+            @delete-chat="handleDeleteChat"
           />
         </div>
 
         <div class="col-12 col-lg-7 h-100">
-          <ContentPanel :category="currentCategory" :sub="currentSub" />
+          <ContentPanel
+            :category="currentCategory"
+            :sub="currentSub"
+            :chats="chats"
+            @open-chat="handleOpenChat"
+          />
         </div>
       </div>
     </div>
@@ -56,6 +63,22 @@ export default {
 
     const currentCategory = ref("bride");
     const currentSub = ref("Wedding dress");
+
+    const chats = ref([
+      {
+        id: 1,
+        type: "person",
+        subjectId: "maid-of-honor-1",
+        title: "Maid of Honor - Ana",
+      },
+      {
+        id: 2,
+        type: "person",
+        subjectId: "best-man-1",
+        title: "Best Man - Marko",
+      },
+      { id: 3, type: "band", subjectId: 1, title: "Bend Joy" },
+    ]);
 
     const weddingDateDisplay = computed(() =>
       weddingDate.value.toLocaleDateString("hr-HR", {
@@ -93,13 +116,53 @@ export default {
       currentSub.value = defaults[cat] || null;
     };
 
+    const handleOpenChat = ({ type, subjectId, title }) => {
+      let chat = chats.value.find(
+        (c) => c.type === type && c.subjectId === subjectId
+      );
+
+      if (!chat) {
+        const newId = chats.value.length
+          ? Math.max(...chats.value.map((c) => c.id)) + 1
+          : 1;
+
+        chat = { id: newId, type, subjectId, title };
+        chats.value.push(chat);
+      }
+
+      currentCategory.value = "chat";
+      currentSub.value = `chat-${chat.id}`;
+    };
+
+    const handleDeleteChat = (chatId) => {
+      const chat = chats.value.find((c) => c.id === chatId);
+      const title = chat ? chat.title : chatId;
+
+      if (!confirm(`Želiš li stvarno obrisati razgovor "${title}"?`)) return;
+
+      chats.value = chats.value.filter((c) => c.id !== chatId);
+
+      if (currentSub.value === "chat-" + chatId) {
+        const first = chats.value[0];
+        if (first) {
+          currentSub.value = "chat-" + first.id;
+        } else {
+          currentCategory.value = "bride";
+          currentSub.value = "Wedding dress";
+        }
+      }
+    };
+
     return {
       weddingDate,
       weddingDateDisplay,
       daysLeftMessage,
       currentCategory,
       currentSub,
+      chats,
       onSelectCategory,
+      handleOpenChat,
+      handleDeleteChat,
     };
   },
 };

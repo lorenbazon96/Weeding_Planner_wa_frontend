@@ -16,7 +16,10 @@
             <p class="mb-2">⏱️ {{ salon.status }}</p>
           </div>
           <div>
-            <button class="btn btn-dark rounded-pill px-4 py-1">
+            <button
+              class="btn btn-dark rounded-pill px-4 py-1"
+              @click="$emit('read-more', salon)"
+            >
               Read more...
             </button>
           </div>
@@ -32,6 +35,7 @@ export default {
   props: {
     salon: { type: Object, required: true },
   },
+  emits: ["read-more"],
 };
 </script>
 

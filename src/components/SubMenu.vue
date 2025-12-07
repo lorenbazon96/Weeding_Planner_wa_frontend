@@ -11,37 +11,40 @@
         </button>
       </div>
 
-      <ul class="list-unstyled flex-grow-1 overflow-auto mb-0">
-        <li
-          v-for="note in notes"
-          :key="note.id"
-          class="note-item d-flex align-items-center gap-2 mb-2"
-          :class="{ active: 'note-' + note.id === activeSub }"
-          @click="$emit('select-sub', 'note-' + note.id)"
-        >
-          <input
-            type="checkbox"
-            class="form-check-input"
-            v-model="note.done"
-            @click.stop="note.done = !note.done"
-          />
-          <span
-            class="priority-dot"
-            :class="'priority-' + note.priority"
-          ></span>
-          <div class="flex-grow-1">
-            <div class="fw-semibold small">{{ note.title }}</div>
-            <div class="text-muted xsmall">{{ note.priority }} priority</div>
-          </div>
-          <button
-            class="btn btn-sm p-0 px-1 note-delete-btn"
-            @click.stop="deleteNote(note.id)"
+      <div class="notes-list">
+        <ul class="list-unstyled mb-0">
+          <li
+            v-for="note in notes"
+            :key="note.id"
+            class="note-item d-flex align-items-center gap-2 mb-2"
+            :class="{ active: 'note-' + note.id === activeSub }"
+            @click="$emit('select-sub', 'note-' + note.id)"
           >
-            <img :src="trash" alt="delete" class="note-delete-icon" />
-          </button>
-        </li>
-      </ul>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              v-model="note.done"
+              @click.stop="note.done = !note.done"
+            />
+            <span
+              class="priority-dot"
+              :class="'priority-' + note.priority"
+            ></span>
+            <div class="flex-grow-1">
+              <div class="fw-semibold small">{{ note.title }}</div>
+              <div class="text-muted xsmall">{{ note.priority }} priority</div>
+            </div>
+            <button
+              class="btn btn-sm p-0 px-1 note-delete-btn"
+              @click.stop="deleteNote(note.id)"
+            >
+              <img :src="trash" alt="delete" class="note-delete-icon" />
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
+
     <div
       v-else-if="category === 'guests'"
       class="mt-4 p-3 bg-white rounded-4 shadow-sm"
@@ -88,45 +91,39 @@
         </button>
       </div>
 
-      <ul class="list-unstyled flex-grow-1 overflow-auto mb-0">
-        <li
-          v-for="chat in chats"
-          :key="chat.id"
-          class="chat-item d-flex align-items-center gap-2 mb-2"
-          :class="{ active: 'chat-' + chat.id === activeSub }"
-          @click="$emit('select-sub', 'chat-' + chat.id)"
-        >
-          <div
-            class="chat-avatar rounded-circle d-flex align-items-center justify-content-center"
+      <div class="chat-list">
+        <ul class="list-unstyled mb-0">
+          <li
+            v-for="chat in chats"
+            :key="chat.id"
+            class="chat-item d-flex align-items-center gap-2 mb-2"
+            :class="{ active: 'chat-' + chat.id === activeSub }"
+            @click="$emit('select-sub', 'chat-' + chat.id)"
           >
-            <span>{{ chat.initials }}</span>
-          </div>
-
-          <div class="flex-grow-1">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="fw-semibold small">{{ chat.name }}</span>
-              <span class="xsmall text-muted">{{ chat.lastTime }}</span>
+            <div
+              class="chat-avatar rounded-circle d-flex align-items-center justify-content-center"
+            >
+              <span>{{ getChatInitials(chat.title) }}</span>
             </div>
-            <div class="xsmall text-muted text-truncate">
-              {{ chat.lastMessage }}
+
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold small">{{ chat.title }}</span>
+              </div>
+              <div class="xsmall text-muted text-truncate">
+                {{ chat.subjectType || "Chat" }}
+              </div>
             </div>
-          </div>
 
-          <span
-            v-if="chat.unread > 0"
-            class="badge bg-danger rounded-pill me-1"
-          >
-            {{ chat.unread }}
-          </span>
-
-          <button
-            class="btn btn-sm p-0 px-1 chat-delete-btn"
-            @click.stop="deleteChat(chat.id)"
-          >
-            <img :src="trash" alt="delete" class="chat-delete-icon" />
-          </button>
-        </li>
-      </ul>
+            <button
+              class="btn btn-sm p-0 px-1 chat-delete-btn"
+              @click.stop="$emit('delete-chat', chat.id)"
+            >
+              <img :src="trash" alt="delete" class="chat-delete-icon" />
+            </button>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <ul v-else class="list-unstyled mb-0">
@@ -219,6 +216,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    chats: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -240,32 +241,6 @@ export default {
         { id: 3, title: "Guests to call", priority: "low", done: false },
       ],
       trash,
-      chats: [
-        {
-          id: 1,
-          name: "Maid of Honor - Ana",
-          initials: "MA",
-          lastMessage: "Ok, šaljem ti fotke haljine kasnije.",
-          lastTime: "18:42",
-          unread: 2,
-        },
-        {
-          id: 2,
-          name: "Best Man - Marko",
-          initials: "BM",
-          lastMessage: "Jesmo riješili prijevoz za kumove?",
-          lastTime: "17:05",
-          unread: 0,
-        },
-        {
-          id: 3,
-          name: "Bend Joy",
-          initials: "BJ",
-          lastMessage: "Termin nam je slobodan.",
-          lastTime: "Jučer",
-          unread: 1,
-        },
-      ],
     };
   },
   computed: {
@@ -378,20 +353,13 @@ export default {
     },
   },
   methods: {
-    deleteChat(id) {
-      const chat = this.chats.find((c) => c.id === id);
-      const title = chat ? chat.name : id;
-
-      if (!confirm(`Želiš li stvarno obrisati razgovor "${title}"?`)) {
-        return;
+    getChatInitials(title) {
+      if (!title) return "?";
+      const words = title.split(" ").filter((w) => w.length > 0);
+      if (words.length === 1) {
+        return words[0].substring(0, 2).toUpperCase();
       }
-
-      this.chats = this.chats.filter((c) => c.id !== id);
-
-      if (this.activeSub === "chat-" + id) {
-        const first = this.chats[0];
-        this.$emit("select-sub", first ? "chat-" + first.id : "");
-      }
+      return (words[0][0] + words[words.length - 1][0]).toUpperCase();
     },
     addNote() {
       const id = this.notes.length
@@ -521,5 +489,22 @@ export default {
 .chat-delete-btn {
   background: transparent;
   border: none;
+}
+
+.submenu {
+  background: rgba(244, 231, 204, 0.95);
+  border-radius: 1.5rem;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-list,
+.chat-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 260px);
+  overflow-y: auto;
 }
 </style>

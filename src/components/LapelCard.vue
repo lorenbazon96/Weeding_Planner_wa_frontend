@@ -66,9 +66,36 @@
       </button>
     </div>
 
-    <div>
+    <div class="mb-4">
       <h5 class="mb-2">Notes (Materials & Suppliers)</h5>
       <textarea class="form-control" v-model="notes"></textarea>
+    </div>
+
+    <!-- 🖼 Reference image -->
+    <div>
+      <h5 class="mb-2">Reference image for lapels</h5>
+      <div class="d-flex align-items-center gap-3">
+        <div style="max-width: 260px" class="flex-grow-1">
+          <input
+            type="file"
+            accept="image/*"
+            class="form-control form-control-sm"
+            @change="onImageChange"
+          />
+        </div>
+
+        <div
+          v-if="imagePreview"
+          class="border rounded p-1"
+          style="width: 90px; height: 90px; overflow: hidden"
+        >
+          <img
+            :src="imagePreview"
+            alt="Lapels reference"
+            class="w-100 h-100 object-fit-cover"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -85,11 +112,25 @@ export default {
       },
       assistants: [{ name: "", checked: false }],
       notes: "",
+      imageFile: null,
+      imagePreview: null,
     };
   },
   methods: {
     addAssistant() {
       this.assistants.push({ name: "", checked: false });
+    },
+    onImageChange(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        this.imageFile = null;
+        this.imagePreview = null;
+        return;
+      }
+
+      this.imageFile = file;
+      // lokalni preview (u memoriji browsera)
+      this.imagePreview = URL.createObjectURL(file);
     },
   },
 };

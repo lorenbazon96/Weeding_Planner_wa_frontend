@@ -13,6 +13,10 @@
       </router-link>
     </div>
 
+    <div v-if="imagePreview" class="mt-4">
+      <img :src="imagePreview" alt="Wedding cover" class="cover-preview" />
+    </div>
+
     <div class="edit-form mt-5 d-flex flex-column align-items-center">
       <label class="label-gold mb-2">Names</label>
       <input
@@ -24,6 +28,14 @@
 
       <label class="label-gold mb-2">Date</label>
       <input type="date" v-model="date" class="form-input mb-4" />
+
+      <label class="label-gold mb-2">Cover image</label>
+      <input
+        type="file"
+        accept="image/*"
+        class="form-input mb-4"
+        @change="onImageChange"
+      />
 
       <button class="btn btn-gold" @click="saveChanges">Save Changes</button>
     </div>
@@ -37,13 +49,43 @@ export default {
     return {
       names: "Ivan & Ivana",
       date: "2026-11-15",
+      imageFile: null,
+      imagePreview: null,
     };
   },
   methods: {
     saveChanges() {
-      alert(`Saved: ${this.names} - ${this.date}`);
+      localStorage.setItem("wedding_names", this.names);
+      localStorage.setItem("wedding_date", this.date);
+
+      if (this.imagePreview) {
+        localStorage.setItem("wedding_image", this.imagePreview);
+      }
+
       this.$router.push("/welcome");
     },
+    onImageChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      this.imageFile = file;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        this.imagePreview = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    },
+  },
+  saveChanges() {
+    localStorage.setItem("wedding_names", this.names);
+    localStorage.setItem("wedding_date", this.date);
+
+    if (this.imagePreview) {
+      localStorage.setItem("wedding_image", this.imagePreview);
+    }
+
+    this.$router.push("/welcome");
   },
 };
 </script>
@@ -127,5 +169,13 @@ export default {
 }
 .date-text {
   font-size: 30px;
+}
+
+.cover-preview {
+  max-width: 260px;
+  max-height: 260px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 </style>
