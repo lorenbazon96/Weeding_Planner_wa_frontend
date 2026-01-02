@@ -36,8 +36,10 @@
         class="form-input mb-4"
         @change="onImageChange"
       />
-
-      <button class="btn btn-gold" @click="saveChanges">Save Changes</button>
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button class="btn btn-gold" @click="saveChanges">Save Changes</button>
+        <button class="btn btn-gold" @click="goBack">Back</button>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +64,9 @@ export default {
         localStorage.setItem("wedding_image", this.imagePreview);
       }
 
+      this.$router.push("/welcome");
+    },
+    goBack() {
       this.$router.push("/welcome");
     },
     onImageChange(e) {

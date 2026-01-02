@@ -13,8 +13,12 @@
           </div>
         </router-link>
       </div>
-
-      <div class="remaining-pill">{{ daysLeftMessage }}</div>
+      <div class="d-flex flex-column align-items-end gap-2">
+        <button class="remaining-pill logout-btn" @click="logOut">
+          Log out
+        </button>
+        <div class="remaining-pill">{{ daysLeftMessage }}</div>
+      </div>
     </header>
 
     <div class="container-fluid flex-grow-1" style="min-height: 0">
@@ -152,6 +156,9 @@ export default {
         }
       }
     };
+    const logOut = () => {
+      window.location.href = "/";
+    };
 
     return {
       weddingDate,
@@ -163,6 +170,7 @@ export default {
       onSelectCategory,
       handleOpenChat,
       handleDeleteChat,
+      logOut,
     };
   },
 };
@@ -217,5 +225,19 @@ export default {
   padding: 0.5rem 2rem;
   border-radius: 999px;
   font-weight: 600;
+}
+button.remaining-pill:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.logout-btn {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.logout-btn:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 </style>

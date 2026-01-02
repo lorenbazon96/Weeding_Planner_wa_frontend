@@ -647,7 +647,9 @@
           </div>
         </div>
       </div>
-
+      <div v-else-if="showTheDay" class="flex-grow-1 overflow-auto pe-1">
+        <TheDayCard />
+      </div>
       <div
         v-else
         class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
@@ -689,6 +691,7 @@ import MenuCard from "./MenuCard.vue";
 import CakeCard from "./CakeCard.vue";
 import BandCard from "./BandCard.vue";
 import DanceCard from "./DanceCard.vue";
+import TheDayCard from "./TheDayCard.vue";
 
 import bride from "@/assets/bride.png";
 import ring from "@/assets/ring.png";
@@ -759,6 +762,7 @@ export default {
     CakeCard,
     BandCard,
     DanceCard,
+    TheDayCard,
   },
   props: {
     category: String,
@@ -1765,6 +1769,9 @@ export default {
     showBudget() {
       return this.category === "budget";
     },
+    showTheDay() {
+      return this.category === "day";
+    },
     showNotes() {
       return this.category === "notes";
     },
@@ -1925,6 +1932,14 @@ export default {
         band: "Music genre",
       };
       return labels[type] || "Details";
+    },
+    saveTheDay(locations) {
+      localStorage.setItem("theDayTimeline", JSON.stringify(locations));
+    },
+
+    loadTheDay() {
+      const saved = localStorage.getItem("theDayTimeline");
+      return saved ? JSON.parse(saved) : [{ name: "", time: "", address: "" }];
     },
   },
 };
